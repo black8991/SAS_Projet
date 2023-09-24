@@ -15,6 +15,7 @@ typedef struct Tache {
   Date dedline;
   int status;
 } Tache;
+
 void functions();
 void ajout(Tache **tach, int *taille);
 void ajoutplus(Tache **tach, int *taille, int match);
@@ -28,27 +29,12 @@ void mod_status(Tache *tach, int index);
 void mod_deadline(Tache *tach);
 void delete_tach(Tache *tach, int taille, int id);
 void search_id(Tache *tach, int taille, int id);
-void search_Titre(Tache *tach, int taille, char tache[25]);
+void search_Titre(Tache *tach, int taille,char *tacheRe);
 void Statistiques(Tache *tach, int taille);
 void case3function(Tache *taches, int taille);
 void case4function(Tache *taches, int taille);
-void Trier_par_deadline(Tache *tach, int taille) {
-  Tache temp;
-  for (int i = 0; i < taille - 1; i++) {
-    for (int j = i + 1; j < taille; j++) {
-      Date date1 = tach[i].debut;
-      Date date2 = tach[j].debut;
-      if (date1.year > date2.year ||
-          (date1.year == date2.year && date1.month > date2.month) ||
-          (date1.year == date2.year && date1.month == date2.month &&
-           date1.day > date2.day)) {
-        temp = tach[i];
-        tach[i] = tach[j];
-        tach[j] = temp;
-      }
-    }
-  }
-}
+void case6function(Tache *taches, int taille);
+
 
 void ajout(Tache **tach, int *taille) {
   (*taille)++;
@@ -70,13 +56,13 @@ void ajout(Tache **tach, int *taille) {
   scanf("%s", newtach->tache);
   printf("\n\t Description: ");
   scanf(" %[^\n]s", newtach->Description);
-  printf("\n Enter date debut->\n");
-  printf("\n\t\t Day: ");
-  scanf("%d", &newtach->debut.day);
-  printf("\n\t\t Month: ");
-  scanf("%d", &newtach->debut.month);
-  printf("\n\t\t Year: ");
-  scanf("%d", &newtach->debut.year);
+  /*  printf("\n Enter date debut->\n");
+    printf("\n\t\t Day: ");
+    scanf("%d", &newtach->debut.day);
+    printf("\n\t\t Month: ");
+    scanf("%d", &newtach->debut.month);
+    printf("\n\t\t Year: ");
+    scanf("%d", &newtach->debut.year);*/
   printf("\n  Enter dedline date->\n");
   printf("\n\t\t Day: ");
   scanf("%d", &newtach->dedline.day);
@@ -115,6 +101,8 @@ void ajoutplus(Tache **tach, int *taille, int match) {
   }
 }
 
+
+
 void afficher(Tache *tach) {
   printf("\n\tId:%d", tach->id);
   printf("\n\tTache  : %s", tach->tache);
@@ -130,6 +118,7 @@ void afficher(Tache *tach) {
   } else if (tach->status == 3) {
     printf("\n\tStatus:%s", "finalisee.\n");
   }
+  printf("\n______________________________________\n");
 }
 
 void afficherplus(Tache *tach, int taille) {
@@ -137,6 +126,50 @@ void afficherplus(Tache *tach, int taille) {
     printf("Task %d:\n", i + 1);
     afficher(&tach[i]);
     printf("\n");
+  }
+}
+
+void Trier_par_deadline(Tache *tach, int taille) {
+  Tache temp;
+  for (int i = 0; i < taille - 1; i++) {
+    for (int j = i + 1; j < taille; j++) {
+      Date date1 = tach[i].debut;
+      Date date2 = tach[j].debut;
+      if (date1.year > date2.year ||
+          (date1.year == date2.year && date1.month > date2.month) ||
+          (date1.year == date2.year && date1.month == date2.month &&
+           date1.day > date2.day)) {
+        temp = tach[i];
+        tach[i] = tach[j];
+        tach[j] = temp;
+      }
+    }
+  }
+}
+
+void tri_paralpha(Tache *tach, int taille) {
+  Tache temp;
+  for (int i = 0; i < taille - 1; i++) {
+    for (int j = i + 1; j < taille; j++) {
+      if (strcmp(tach[i].tache, tach[i + 1].tache) == 1) {
+        temp = tach[i];
+        tach[i] = tach[j];
+        tach[j] = temp;
+      }
+    }
+  }
+}
+
+void tri_special(Tache *tach, int taille) {
+  int var1 = match_days();
+  for (int i = 0; i < taille; i++) {
+    int var2 = (tach[i].dedline.day) + (tach[i].dedline.month) * 30 +
+               (tach[i].dedline.year) * 360;
+    if (0 < var2 - var1 && var2 - var1 <= 3) {
+      printf("The task that left [0,3] days for the deadline:\n");
+      afficher(&tach[i]);
+      break;
+    }
   }
 }
 
@@ -162,102 +195,17 @@ void mod_status(Tache *tach, int index) {
     tach[index].status = 3;
   }
 }
-int match_days() {
-  time_t current_time;
-  struct tm *time_info;
-  time(&current_time);
-  time_info = localtime(&current_time);
-  int day = time_info->tm_mday;
-  int month = time_info->tm_mon + 1;
-  int year = time_info->tm_year + 1900;
-  return year * 360 + month * 30 + day;
-}
-void tri_special(Tache *tach, int taille) {
-  int var1 = match_days();
-  for (int i = 0; i < taille; i++) {
-    int var2 = (tach[i].dedline.day) + (tach[i].dedline.month) * 30 +
-               (tach[i].dedline.year) * 360;
-    if (0 < var2 - var1 && var2 - var1 <= 3) {
-      printf("The task that left [0,3] days for the deadline:\n");
-      afficher(&tach[i]);
-    }
-  }
+
+void mod_deadline(Tache *tach) {
+  printf("\t Enter new dedline date:\n");
+  printf("\t   Day: ");
+  scanf("%d", &tach->dedline.day);
+  printf("\t   Month: ");
+  scanf("%d", &tach->dedline.month);
+  printf("\t   Year: ");
+  scanf("%d", &tach->dedline.year);
 }
 
-int main() {
-
-  int taille = 0;
-  Tache *taches = NULL;
-  char titre[25];
-  int choix, match, index, id;
-
-  do {
-    functions();
-    if (scanf("%d", &choix) != 1) {
-      printf("Invalid input.\n");
-      break;
-    }
-
-    switch (choix) {
-    case 1:
-      ajout(&taches, &taille);
-      break;
-    case 2:
-      printf("Combien de taches souhaitez-vous ajouter ? ");
-      scanf("%d", &match);
-      ajoutplus(&taches, &taille, match);
-      break;
-    case 3:
-      case3function(taches, taille);
-      afficherplus(taches, taille);
-      break;
-    case 4:
-      case4function(taches, taille);
-      break;
-    case 5:
-
-      break;
-    case 6:
-      delete_tach(taches, taille, id);
-      break;
-    case 7:
-      tri_special(taches, taille);
-      break;
-    case 8:
-      scanf("%d", &id);
-      search_id(taches, taille, id);
-      search_Titre(taches, taille, titre);
-
-      break;
-    case 0:
-      printf("Quitting...\n");
-      break;
-    default:
-      printf("Choix invalide.\n");
-      break;
-    }
-
-  } while (choix != 0);
-
-  free(taches);
-
-  return 0;
-}
-
-void search_id(Tache *tach, int taille, int id) {
-  for (int i = 0; i < taille; i++) {
-    if (tach[i].id == id) {
-      afficher(&tach[i]);
-    }
-  }
-}
-void search_Titre(Tache *tach, int taille, char tache[25]) {
-  for (int i = 0; i < taille; i++) {
-    if (tach[i].tache == tache) {
-      afficher(&tach[i]);
-    }
-  }
-}
 void delete_tach(Tache *tach, int taille, int id) {
   int i, j;
   for (int i = 0; i < taille; i++) {
@@ -267,6 +215,23 @@ void delete_tach(Tache *tach, int taille, int id) {
       }
     }
   }
+}
+
+void search_id(Tache *tach, int taille, int id) {
+  for (int i = 0; i < taille; i++) {
+    if (tach[i].id == id) {
+      afficher(&tach[i]);
+    }
+  }
+}
+
+void search_Titre(Tache *tach, int taille,char *tacheRe) {
+    for (int i = 0; i < taille; i++) {
+        if (strcmp(tach[i].tache,tacheRe) == 0) {
+
+            afficher(&tach[i]);
+        }
+    }
 }
 
 void Statistiques(Tache *tach, int taille) {
@@ -286,29 +251,86 @@ void Statistiques(Tache *tach, int taille) {
     }
   }
 }
-void mod_deadline(Tache *tach) {
-  printf("\t Enter new dedline date:\n");
-  printf("\t   Day: ");
-  scanf("%d", &tach->dedline.day);
-  printf("\t   Month: ");
-  scanf("%d", &tach->dedline.month);
-  printf("\t   Year: ");
-  scanf("%d", &tach->dedline.year);
+
+
+
+int main() {
+
+  int taille = 0;
+  Tache *taches = NULL;
+  char titre[25];
+  int choix, match, index, id;
+
+  do {
+    functions();
+   if (scanf("%d", &choix) != 1) {
+      printf("Invalid input.\n");
+      break;
+    }
+
+    switch (choix) {
+    case 1:
+      system("cls");
+      ajout(&taches, &taille);
+      break;
+    case 2:
+      system("cls");
+      printf("Combien de taches souhaitez-vous ajouter ? ");
+      scanf("%d", &match);
+      ajoutplus(&taches, &taille, match);
+      break;
+    case 3:
+      system("cls");
+      case3function(taches, taille);
+
+      break;
+    case 4:
+      system("cls");
+      case4function(taches, taille);
+      break;
+    case 5:
+     system("cls");
+      printf("Entrez le nombre de la tâche à Supprimer:");
+      scanf("%d", &id);
+      delete_tach(taches, taille, id);
+      break;
+    case 6:
+      system("cls");
+      case6function(taches, taille);
+      break;
+    case 7:
+        system("cls");
+      Statistiques(taches, taille);
+      break;
+    case 0:
+      printf("Quitting...\n");
+      break;
+    default:
+      printf("Choix invalide.\n");
+      break;
+    }
+
+  } while (choix != 0);
+
+  free(taches);
+
+  return 0;
 }
 
-void tri_paralpha(Tache *tach, int taille) {
-  Tache temp;
-  for (int i = 0; i < taille - 1; i++) {
-    for (int j = i + 1; j < taille; j++) {
-      if (strcmp(tach[i].tache, tach[i + 1].tache) == 1) {
-        temp = tach[i];
-        tach[i] = tach[j];
-        tach[j] = temp;
-      }
-    }
-  }
+
+int match_days() {
+  time_t current_time;
+  struct tm *time_info;
+  time(&current_time);
+  time_info = localtime(&current_time);
+  int day = time_info->tm_mday;
+  int month = time_info->tm_mon + 1;
+  int year = time_info->tm_year + 1900;
+  return year * 360 + month * 30 + day;
 }
+
 void functions() {
+  system("cls");
   printf("\n________________Functions:__________________\n\n"
          "\t[1] Ajouter une tache\n"
          "\t[2] Ajouter plusieurs taches\n"
@@ -321,6 +343,7 @@ void functions() {
          "_____________________________________________\n"
          "Votre choix: ");
 }
+
 void case3function(Tache *taches, int taille) {
   printf("\n_________________________________________________________\n\n"
          "\t[1]Trier les tâches par ordre alphabétique\n"
@@ -333,13 +356,16 @@ void case3function(Tache *taches, int taille) {
   scanf("%d", &choix);
   if (choix == 1) {
     tri_paralpha(taches, taille);
+    afficherplus(taches, taille);
   } else if (choix == 2) {
     Trier_par_deadline(taches, taille);
     printf("Tasks sorted by deadline.\n");
+    afficherplus(taches, taille);
   } else if (choix == 3) {
     tri_special(taches, taille);
   }
 }
+
 void case4function(Tache *taches, int taille) {
   printf("\n______________________________________________\n\n"
          "\t[1] Modifier la description d'une tâche\n"
@@ -357,5 +383,31 @@ void case4function(Tache *taches, int taille) {
     mod_status(taches, id);
   } else if (choix == 3) {
     mod_deadline(taches);
+  }
+}
+
+void case6function(Tache *taches, int taille) {
+  int choix;
+  int id;
+  char tache[25];
+
+  printf("\n______________________________________________\n\n"
+         "\t[1] Rechercher une tâche par son Identifiant\n"
+         "\t[2] Rechercher une tâche par son Titre\n"
+         "______________________________________________\n");
+  printf("Votre choix:");
+  scanf("%d", &choix);
+
+  if (choix == 1) {
+    printf("Entrez l'ID de la tâche à rechercher: ");
+    scanf("%d", &id);
+    search_id(taches, taille, id);
+  } else if (choix == 2) {
+
+    printf("Entrez le titre de la tâche à rechercher: ");
+    scanf("%s",tache);
+    search_Titre(taches, taille, tache);
+  } else {
+    printf("Choix invalide. Veuillez choisir 1 ou 2.\n");
   }
 }
